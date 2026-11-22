@@ -1,38 +1,51 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const mongoose = require('mongoose');
+
+const connectDB = require('./config/db');
+const healthRoutes = require('./routes/healthRoutes');
+const errorHandler = require('./middlewares/errorHandler');
 
 // Charger les variables d'environnement
 dotenv.config();
 
 const app = express();
 
-// Middlewares
-app.use(cors());
+// Middlewares globaux
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
-// Route de santé
-app.get('/api/health', (req, res) => {
+// Routes
+app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'API StockMaster fonctionne correctement',
+    message: 'Bienvenue sur l\'API StockMaster',
   });
 });
 
+app.use('/api', healthRoutes);
+
+// Gestion des routes non trouvées
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route non trouvée',
+  });
+});
+
+// Gestion centralisée des erreurs
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 5000;
 
-// Connexion à MongoDB (optionnelle au démarrage, ne bloque pas le serveur)
-const MONGO_URI = process.env.MONGO_URI;
-if (MONGO_URI && MONGO_URI !== 'your_mongodb_connection_string') {
-  mongoose
-    .connect(MONGO_URI)
-    .then(() => console.log('Connecté à MongoDB'))
-    .catch((err) => console.error('Erreur de connexion MongoDB :', err.message));
-}
+// Connecter MongoDB puis démarrer le serveur
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`Serveur StockMaster démarré sur le port ${PORT}`);
+  });
+};
 
-app.listen(PORT, () => {
-  console.log(`Serveur StockMaster démarré sur le port ${PORT}`);
-});
+startServer();
 
 module.exports = app;
