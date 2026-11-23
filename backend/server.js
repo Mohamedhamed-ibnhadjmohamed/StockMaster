@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const healthRoutes = require('./routes/healthRoutes');
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 // Charger les variables d'environnement
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
 
 app.use('/api', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
 
 // Gestion des routes non trouvées
 app.use((req, res) => {
